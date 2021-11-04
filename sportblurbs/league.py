@@ -1,3 +1,5 @@
+import datetime
+
 import sportsipy.mlb
 import sportsipy.mlb.boxscore
 import sportsipy.mlb.roster
@@ -17,8 +19,11 @@ class League:
         self.league_module = league_module
         self._boxscores = dict()
 
-    def get_player(self, player_id):
-        return self.league_module.roster.Player(player_id)
+    def get_player(self, player_id, season=None):
+        if not season:
+            # TODO: Add per-league season methods (i.e. NBA is 2021-22, NFL is 2021 until Feb, etc.)
+            season = datetime.datetime.utcnow().year
+        return self.league_module.roster.Player(player_id)(str(season))
 
     def get_games(self, date):
         return self.league_module.boxscore.Boxscores(date).games[self.date_string(date)]
@@ -33,7 +38,7 @@ class League:
 
     @staticmethod
     def date_string(date):
-        return date.strftime("%m-%d-%Y")
+        return date.strftime("%m-%-d-%Y")
 
 
 class NflLeague(League):

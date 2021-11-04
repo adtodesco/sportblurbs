@@ -67,17 +67,6 @@ class NflPlayerNewsWriter(PlayerNewsWriter):
         return summary
 
 
-def write_player_blurbs_from_day(
-    date, league, news_writer=BasicPlayerNewsWriter(), spin_writer=NullSpinWriter(), filters=None
-):
-    blurbs = list()
-    boxscores = league.get_boxscores(date)
-    for boxscore in boxscores:
-        blurbs.extend(write_player_blurbs_from_boxscore(boxscore, league, news_writer, spin_writer, filters))
-
-    return blurbs
-
-
 def write_player_blurbs_from_boxscore(
     boxscore,
     league,
@@ -91,9 +80,9 @@ def write_player_blurbs_from_boxscore(
     for player_boxscore in boxscore.home_players + boxscore.away_players:
         player = league.get_player(player_boxscore.player_id)
         if filters and not all(func(boxscore, player, player_boxscore) for func in filters):
-            logging.debug("filtering out " + player.name)
+            logging.debug(f"filtering out {player.name}")
             continue
-        logging.debug("writing blurb for " + player.name)
+        logging.debug(f"writing blurb for {player.name}")
         news = news_writer.write(boxscore, player, player_boxscore)
         spin = spin_writer.write(news)
         blurbs.append({"player": player, "news": news, "spin": spin})
