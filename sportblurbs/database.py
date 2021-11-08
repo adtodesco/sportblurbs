@@ -65,9 +65,10 @@ def create_blurb_documents(blurbs, source, league):
 def create_game_document(boxscore, league, processed=False):
     # Should we do it like this, or should we have "home": {"team": <abbrev>, "score": <points>}, "away" {...} ?
     return {
-        "date": boxscore.date,
+        "date": datetime.datetime.utcnow(),
         "game": {
             "id": boxscore._uri,
+            "date": boxscore.date,
             "teams": [
                 {
                     "name": boxscore.winning_name,
