@@ -128,6 +128,6 @@ class NflLeague(League):
         return str(date[0]) + "-" + str(date[1])
 
 
-MLB = League("MLB", sportsipy.mlb, season_start=(3, 15))
-NFL = NflLeague("NFL", sportsipy.nfl, season_start=(8, 1))
-NBA = League("NBA", sportsipy.nba, season_start=(9, 15), multiyear=True)
+mlb = League("MLB", sportsipy.mlb, season_start=(3, 15))
+nfl = NflLeague("NFL", sportsipy.nfl, season_start=(8, 1))
+nba = League("NBA", sportsipy.nba, season_start=(9, 15), multiyear=True)
