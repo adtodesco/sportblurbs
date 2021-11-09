@@ -57,16 +57,16 @@ class NflLeague(League):
         super().__init__(name, league_module, season_start, multiyear)
 
     def _build_schedule(self, season):
+        # TODO: Handle building when season does not exist (too old or in future)
         # Here we're just using the sportsipy team Schedule class to get a generic NFL season schedule.  Any team would
         # work, but the Pats work the best.
-        # TODO: Handle building when season does not exist (too old or in future)
         patriots_schedule = Schedule("NWE", season)
-        season_schedule = list()
-        for game_dt in patriots_schedule.dataframe["datetime"]:
-            game_week_dt = game_dt - timedelta(days=1)
-            season_schedule.append(game_week_dt - timedelta(days=game_week_dt.weekday() - 1))
-
-        self._schedule[season] = season_schedule
+        season_start_dt = patriots_schedule.dataframe["datetime"].iloc[0]
+        # Subtract one day from season_start_dt in case the Pats open on Monday night
+        season_start_dt = season_start_dt - timedelta(days=1)
+        # Back up season_start_dt to Tuesday (we consider a NFL week to go from Tuesday to Monday)
+        season_start_dt = season_start_dt - timedelta(days=season_start_dt.weekday() - 1)
+        self._schedule[season] = [season_start_dt + timedelta(weeks=w) for w in range(self.season_length(season))]
 
     def get_games(self, date=datetime.utcnow()):
         if isinstance(date, datetime):
@@ -89,7 +89,7 @@ class NflLeague(League):
                 week = week_num
 
         if date < (week_dt + timedelta(days=7)):
-            return season, week_num + 1
+            return season, week_num
 
         return season, "postseason"
 
@@ -103,25 +103,27 @@ class NflLeague(League):
             start_season = int(start_season) + 1
             start_week = 1
         if end_week == "preseason":
-            season_length = 17 if int(end_season - 1) >= 2021 else 16
             end_season = int(end_season) - 1
-            end_week = season_length
+            end_week = self.season_length(end_season)
         if end_week == "postseason":
-            season_length = 17 if int(end_season) >= 2021 else 16
-            end_week = season_length
+            end_week = self.season_length(end_season)
 
-        weeks = [(start_season, start_week)]
+        weeks = list()
         temp_season, temp_week = start_season, start_week
         while temp_season < end_season or (temp_season == end_season and temp_week <= end_week):
             weeks.append((temp_season, temp_week))
-            season_length = 17 if int(temp_season) >= 2021 else 16
-            if int(temp_week) < season_length:
+            if int(temp_week) < self.season_length(temp_season):
                 temp_week = int(temp_week) + 1
             else:
                 temp_season = int(temp_season) + 1
                 temp_week = 1
 
         return weeks
+
+    @staticmethod
+    def season_length(season):
+        # TODO: Add logic for season length for thee olden-days
+        return 18 if int(season) - 1 >= 2021 else 17
 
     @staticmethod
     def date_string(date):
