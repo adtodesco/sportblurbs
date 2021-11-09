@@ -1,7 +1,8 @@
 from dateutil import parser
 import logging
-
 import openai
+
+from .utils import game_score
 
 logger = logging.getLogger()
 
@@ -33,9 +34,10 @@ class PlayerNewsWriter:
 class BasicPlayerNewsWriter(PlayerNewsWriter):
     def write(self, boxscore, player, player_boxscore):
         day_of_week = parser.parse(boxscore.date).strftime("%A")
+        away_score, home_score = game_score(boxscore)
         return (
-            f"{player.name} played in the {boxscore.winning_name}'s {boxscore.away_points} - {boxscore.home_points} win"
-            f" over the {boxscore.losing_name} on {day_of_week}."
+            f"{player.name} played in the {boxscore.winning_name}'s {home_score} - {away_score} win over the "
+            f"{boxscore.losing_name} on {day_of_week}."
         )
 
 

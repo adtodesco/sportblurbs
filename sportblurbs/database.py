@@ -1,8 +1,7 @@
 import datetime
-
 from pymongo import MongoClient
 
-from sportblurbs.utils import game_is_complete
+from sportblurbs.utils import game_is_complete, game_score
 
 SPORTBLURBS_DB = "sportblurbsdb"
 BLURB_COLLECTION = "blurb"
@@ -63,6 +62,8 @@ def create_blurb_documents(blurbs, source, league):
 
 
 def create_game_document(boxscore, league, processed=False):
+    away_score, home_score = game_score(boxscore)
+    winning_score, losing_score = (away_score, home_score) if away_score > home_score else (home_score, away_score)
     return {
         "date": datetime.datetime.utcnow(),
         "game": {
@@ -72,13 +73,13 @@ def create_game_document(boxscore, league, processed=False):
                 {
                     "name": boxscore.winning_name,
                     "abbreviation": boxscore.winning_abbr.upper(),
-                    "score": boxscore.home_points,
+                    "score": winning_score,
                     "is_home": boxscore.winning_name == boxscore._home_name.text(),
                 },
                 {
                     "name": boxscore.losing_name,
                     "abbreviation": boxscore.losing_abbr.upper(),
-                    "score": boxscore.away_points,
+                    "score": losing_score,
                     "is_home": boxscore.losing_name == boxscore._home_name.text(),
                 },
             ],

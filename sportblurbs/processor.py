@@ -17,10 +17,10 @@ logger = logging.getLogger()
 
 
 def process_games(dates, league, news_writer=BasicPlayerNewsWriter(), spin_writer=NullSpinWriter(), filters=None):
-    logger.info("Gathering boxscores...")
+    logger.info("Getting boxscores...")
     boxscores = list()
     for date in dates:
-        print(f"date: {league.date_string(date)}")  # TODO: remove
+        logger.debug(f"Getting boxscores from '{league.date_string(date)}'.")
         boxscores.extend(league.get_boxscores(date))
 
     database = get_database()
@@ -28,7 +28,7 @@ def process_games(dates, league, news_writer=BasicPlayerNewsWriter(), spin_write
     blurbs = list()
     new_or_updated_boxscores = dict()
     for boxscore in boxscores:
-        print(f"boxscore: {str(boxscore)}")  # TODO: remove
+        logger.debug(f"Creating/updating game document for '{str(boxscore)}'.")
         game_doc = get_document(database, GAME_COLLECTION, {"game.id": boxscore._uri})
         if not game_doc:
             game_doc = create_game_document(boxscore, league)

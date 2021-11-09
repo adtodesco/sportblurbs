@@ -40,3 +40,11 @@ def filter_nba_at_least_one_minute_played(boxscore, player, player_boxscore):
     except TypeError:
         logger.debug(f"player {player_boxscore.name}'s minutes_played attribute could not be checked.", exc_info=True)
         return False
+
+
+def filter_mlb_at_least_one_ab_or_ip(boxscore, player, player_boxscore):
+    try:
+        return player_boxscore.at_bats or player_boxscore.innings_pitched
+    except TypeError:
+        logger.debug(f"player {player_boxscore.name}'s boxscore attribute(s) could not be checked.", exc_info=True)
+        return False

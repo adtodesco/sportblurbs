@@ -48,7 +48,7 @@ class League:
 
     @staticmethod
     def date_string(date):
-        return date.strftime("%m-%-d-%Y")
+        return date.strftime("%-m-%-d-%Y")
 
 
 class NflLeague(League):
