@@ -28,7 +28,7 @@ class League:
         else:
             season = date.year
         if self.multiyear:
-            season = f"{season}-{int(season[2:]) + 1}"
+            season = f"{season}-{int(str(season)[2:]) + 1}"
         return season
 
     def get_player(self, player_id, season=None):
@@ -89,7 +89,7 @@ class NflLeague(League):
                 week = week_num
 
         if date < (week_dt + timedelta(days=7)):
-            return season, week_num
+            return season, week
 
         return season, "postseason"
 
@@ -123,7 +123,7 @@ class NflLeague(League):
     @staticmethod
     def season_length(season):
         # TODO: Add logic for season length for thee olden-days
-        return 18 if int(season) - 1 >= 2021 else 17
+        return 18 if int(season) >= 2021 else 17
 
     @staticmethod
     def date_string(date):

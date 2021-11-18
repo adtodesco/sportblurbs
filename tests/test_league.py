@@ -4,50 +4,50 @@ from unittest import mock
 
 from sportblurbs.league import League, nfl
 
-test_league_name = "SLN"
-test_season_start = (6, 1)
-test_season_start_dt = datetime(2020, test_season_start[0], test_season_start[1])
-test_player_id = "TestPlayerId"
+league_name = "SLN"
+season_start = (6, 1)
+season_start_dt = datetime(2021, season_start[0], season_start[1])
+player_id = "TestPlayerId"
 
 
 @pytest.fixture
-def test_league():
+def league():
     return League(
-        name=test_league_name,
+        name=league_name,
         league_module=mock.MagicMock(),
-        season_start=test_season_start,
+        season_start=season_start,
     )
 
 
-def test_get_current_season(test_league):
-    assert test_league.get_season() == str(datetime.utcnow().year)
+def test_get_current_season(league):
+    assert league.get_season() == datetime.utcnow().year
 
 
 @pytest.mark.parametrize(
     "date,multiyear,expected_season",
     [
-        (test_season_start_dt, False, "2021"),
-        (test_season_start_dt - timedelta(days=1), False, "2020"),
-        (test_season_start_dt, True, "2021-22"),
-        (test_season_start_dt - timedelta(days=1), True, "2020-21"),
+        (season_start_dt, False, 2021),
+        (season_start_dt - timedelta(days=1), False, 2020),
+        (season_start_dt, True, "2021-22"),
+        (season_start_dt - timedelta(days=1), True, "2020-21"),
     ],
 )
-def test_get_season_for_a_given_date(test_league, date, multiyear, expected_season):
-    test_league.multiyear = multiyear
-    assert test_league.get_season(date) == expected_season
+def test_get_season_for_a_given_date(league, date, multiyear, expected_season):
+    league.multiyear = multiyear
+    assert league.get_season(date) == expected_season
 
 
-def test_get_player_from_the_current_season(test_league):
-    test_league.get_player(test_player_id)
-    assert test_league.league_module.roster.Player.call_args[0][0] == test_player_id
-    assert test_league.league_module.roster.Player(test_player_id).call_args[0][0] == str(datetime.utcnow().year)
+def test_get_player_from_the_current_season(league):
+    league.get_player(player_id)
+    assert league.league_module.roster.Player.call_args[0][0] == player_id
+    assert league.league_module.roster.Player(player_id).call_args[0][0] == str(datetime.utcnow().year)
 
 
 @pytest.mark.parametrize("season", [2021, "2021-22"])
-def test_get_player_from_a_given_season(test_league, season):
-    test_league.get_player(test_player_id, season)
-    assert test_league.league_module.roster.Player.call_args[0][0] == test_player_id
-    assert test_league.league_module.roster.Player(test_player_id).call_args[0][0] == str(season)
+def test_get_player_from_a_given_season(league, season):
+    league.get_player(player_id, season)
+    assert league.league_module.roster.Player.call_args[0][0] == player_id
+    assert league.league_module.roster.Player(player_id).call_args[0][0] == str(season)
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,7 @@ def test_get_player_from_a_given_season(test_league, season):
         (datetime(year=2014, month=9, day=2), (2014, 1)),
         (datetime(year=2014, month=12, day=28), (2014, 17)),
         (datetime(year=2014, month=12, day=30), (2014, "postseason")),
-        (datetime(year=2021, month=1, day=9), (2021, 18)),
+        (datetime(year=2022, month=1, day=9), (2021, 18)),
     ],
 )
 def test_nfl_get_week_for_a_given_date(date, expected_week):
