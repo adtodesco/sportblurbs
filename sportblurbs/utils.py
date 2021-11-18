@@ -1,8 +1,3 @@
-import logging
-
-logger = logging.getLogger()
-
-
 def player_is_home(player, boxscore):
     return player.team_abbreviation.upper() == boxscore.home_abbreviation.upper()
 
