@@ -1,13 +1,14 @@
 import logging
 
 from sportblurbs.database import (
-    get_database,
-    get_document,
-    GAME_COLLECTION,
-    put_documents,
-    BLURB_COLLECTION,
     create_blurb_documents,
     create_game_document,
+    get_database,
+    get_document,
+    put_documents,
+    update_documents,
+    GAME_COLLECTION,
+    BLURB_COLLECTION,
 )
 from sportblurbs.utils import game_is_complete
 from sportblurbs.writer import BasicPlayerNewsWriter, NullSpinWriter, write_player_blurbs_from_boxscore
@@ -28,7 +29,7 @@ def process_games(dates, league, news_writer=BasicPlayerNewsWriter(), spin_write
     blurbs = list()
     new_or_updated_boxscores = dict()
     for boxscore in boxscores:
-        logger.debug(f"Creating/updating game document for '{str(boxscore)}'.")
+        logger.debug(f"Checking document for '{str(boxscore)}'.")
         game_doc = get_document(database, GAME_COLLECTION, {"game.id": boxscore._uri})
         if not game_doc:
             game_doc = create_game_document(boxscore, league)
@@ -50,7 +51,7 @@ def process_games(dates, league, news_writer=BasicPlayerNewsWriter(), spin_write
         logger.info("No blurbs written.")
     if new_or_updated_boxscores:
         logger.info("Putting new and updated games into database...")
-        put_documents(database, GAME_COLLECTION, new_or_updated_boxscores.values(), update=True)
+        update_documents(database, GAME_COLLECTION, new_or_updated_boxscores.values(), "game.id", upsert=True)
     else:
         logger.info("No new or updated games.")
     logger.info("Processing complete.")

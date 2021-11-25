@@ -1,7 +1,8 @@
 import datetime
 from pymongo import MongoClient
 
-from sportblurbs.utils import game_is_complete, game_score
+from sportblurbs.exception import MultipleDocumentsError
+from sportblurbs.utils import game_is_complete, game_score, get_value_from_document
 
 SPORTBLURBS_DB = "sportblurbsdb"
 BLURB_COLLECTION = "blurb"
@@ -13,29 +14,39 @@ def get_database(database_name=SPORTBLURBS_DB, connection_string="mongodb://loca
     return client[database_name]
 
 
-def get_documents(database, collection_name, filters=None):
-    # TODO: Implement me
-    if filters:
-        # Just putting this here for now so Pycharm doesn't warn me about documents always being None
-        return list()
-
-    return None
+def get_documents(database, collection_name, filter=None):
+    return database[collection_name].find(filter)[:]
 
 
-def get_document(database, colection_name, filters=None):
-    documents = get_documents(database, colection_name, filters)
+def get_document(database, collection_name, filter=None):
+    documents = get_documents(database, collection_name, filter)
     if not documents:
         return None
-
     if len(documents) > 1:
-        raise Exception()  # TODO: Raise MultipleDocumentError (or something like that)
+        raise MultipleDocumentsError(database.name, collection_name, filter)
 
     return documents[0]
 
 
-def put_documents(database, collection_name, documents, unique_field=None, update=False):
-    # TODO: Add logic to update documents that already exist when update is True
+def put_documents(database, collection_name, documents):
+    if isinstance(documents, str):
+        documents = [documents]
     database[collection_name].insert_many(documents)
+
+
+def update_documents(database, collection_name, documents, unique_key, upsert=False):
+    if isinstance(documents, str):
+        documents = [documents]
+    values = list()
+    for document in documents:
+        value = get_value_from_document(unique_key, document)
+        doc_count = database[collection_name].count({unique_key: value})
+        if doc_count > 1:
+            raise MultipleDocumentsError(database.name, collection_name, f"{{{unique_key}: {value}}}")
+        values.append(value)
+
+    for document, value in zip(documents, values):
+        database[collection_name].update_one({unique_key: value}, document, upsert=upsert)
 
 
 def create_blurb_document(blurb, source, league):
