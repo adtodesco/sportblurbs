@@ -1,6 +1,4 @@
-import copy
 import pytest
-from unittest import mock
 
 from sportblurbs.exception import KeyNotFoundError
 from sportblurbs.utils import get_value_from_document
