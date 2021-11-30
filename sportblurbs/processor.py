@@ -11,13 +11,13 @@ from sportblurbs.database import (
     BLURB_COLLECTION,
 )
 from sportblurbs.utils import game_is_complete
-from sportblurbs.writer import BasicPlayerNewsWriter, NullSpinWriter, write_player_blurbs_from_boxscore
+from sportblurbs.writer import write_generic_player_news, write_null_spin, write_player_blurbs_from_boxscore
 
 
 logger = logging.getLogger()
 
 
-def process_games(dates, league, news_writer=BasicPlayerNewsWriter(), spin_writer=NullSpinWriter(), filters=None):
+def process_games(dates, league, new_func=write_generic_player_news, spin_func=write_null_spin, filters=None):
     logger.info("Getting boxscores...")
     boxscores = list()
     for date in dates:
@@ -36,7 +36,7 @@ def process_games(dates, league, news_writer=BasicPlayerNewsWriter(), spin_write
             new_or_updated_boxscores.update({boxscore._uri: game_doc})
         game_doc["complete"] = game_is_complete(boxscore)
         if game_doc["complete"] and not game_doc["processed"]:
-            blurbs.extend(write_player_blurbs_from_boxscore(boxscore, league, news_writer, spin_writer, filters))
+            blurbs.extend(write_player_blurbs_from_boxscore(boxscore, league, new_func, spin_func, filters))
             game_doc["processed"] = True
             new_or_updated_boxscores.update({boxscore._uri: game_doc})
 
