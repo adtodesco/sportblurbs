@@ -15,17 +15,17 @@ def get_database(database_name=SPORTBLURBS_DB, connection_string="mongodb://loca
 
 
 def get_documents(database, collection_name, filter=None):
-    return database[collection_name].find(filter)[:]
+    return database[collection_name].find(filter)
 
 
 def get_document(database, collection_name, filter=None):
-    documents = get_documents(database, collection_name, filter)
-    if not documents:
+    num_documents = database[collection_name].count_documents(filter)
+    if not num_documents:
         return None
-    if len(documents) > 1:
+    if num_documents > 1:
         raise MultipleDocumentsError(database.name, collection_name, filter)
 
-    return documents[0]
+    return get_documents(database, collection_name, filter)[0]
 
 
 def put_documents(database, collection_name, documents):
@@ -40,7 +40,7 @@ def update_documents(database, collection_name, documents, unique_key, upsert=Fa
     values = list()
     for document in documents:
         value = get_value_from_document(unique_key, document)
-        doc_count = database[collection_name].count({unique_key: value})
+        doc_count = database[collection_name].count_documents({unique_key: value})
         if doc_count > 1:
             raise MultipleDocumentsError(database.name, collection_name, f"{{{unique_key}: {value}}}")
         values.append(value)

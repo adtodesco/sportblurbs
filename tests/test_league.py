@@ -7,6 +7,8 @@ from sportblurbs.league import League, nfl
 league_name = "SLN"
 season_start = (6, 1)
 season_start_dt = datetime(2021, season_start[0], season_start[1])
+current_year = datetime.utcnow().year
+season_year = current_year if datetime.utcnow() < season_start_dt else current_year - 1
 player_id = "TestPlayerId"
 
 
@@ -20,7 +22,7 @@ def league():
 
 
 def test_get_current_season(league):
-    assert league.get_season() == datetime.utcnow().year
+    assert league.get_season() == season_year
 
 
 @pytest.mark.parametrize(
@@ -40,7 +42,7 @@ def test_get_season_for_a_given_date(league, date, multiyear, expected_season):
 def test_get_player_from_the_current_season(league):
     league.get_player(player_id)
     assert league.league_module.roster.Player.call_args[0][0] == player_id
-    assert league.league_module.roster.Player(player_id).call_args[0][0] == str(datetime.utcnow().year)
+    assert league.league_module.roster.Player(player_id).call_args[0][0] == str(season_year)
 
 
 @pytest.mark.parametrize("season", [2021, "2021-22"])

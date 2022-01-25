@@ -1,4 +1,5 @@
 import copy
+
 import pytest
 from unittest import mock
 
@@ -59,10 +60,10 @@ def blurb_collection(blurbs, league):
 def sportblurbs_database(game_collection, blurb_collection):
     mock_game_collection = mock.Mock()
     mock_game_collection.find.return_value = game_collection
-    mock_game_collection.count.return_value = len(game_collection)
+    mock_game_collection.count_documents.return_value = len(game_collection)
     mock_blurb_collection = mock.Mock()
     mock_blurb_collection.find.return_value = blurb_collection
-    mock_blurb_collection.count.return_value = len(blurb_collection)
+    mock_blurb_collection.count_documents.return_value = len(blurb_collection)
     mock_sportblurbs_database_dict = {GAME_COLLECTION: mock_game_collection, BLURB_COLLECTION: mock_blurb_collection}
     mock_sportblurbs_database = mock.MagicMock()
     mock_sportblurbs_database.__getitem__.side_effect = mock_sportblurbs_database_dict.__getitem__
@@ -72,6 +73,7 @@ def sportblurbs_database(game_collection, blurb_collection):
 
 @pytest.mark.parametrize("collection_name", [GAME_COLLECTION, BLURB_COLLECTION])
 def test_get_document_returns_none_when_no_matching_documents(sportblurbs_database, collection_name):
+    sportblurbs_database[collection_name].count_documents.return_value = 0
     sportblurbs_database[collection_name].find.return_value = list()
     assert get_document(sportblurbs_database, collection_name) is None
 
@@ -85,6 +87,7 @@ def test_get_document_raises_error_when_multiple_matching_documents(sportblurbs_
 @pytest.mark.parametrize("collection_name", [GAME_COLLECTION, BLURB_COLLECTION])
 def test_get_document_returns_matching_document(sportblurbs_database, collection_name):
     mock_document = mock.Mock()
+    sportblurbs_database[collection_name].count_documents.return_value = 1
     sportblurbs_database[collection_name].find.return_value = [mock_document]
     assert get_document(sportblurbs_database, collection_name) == mock_document
 
@@ -93,7 +96,7 @@ def test_get_document_returns_matching_document(sportblurbs_database, collection
 def test_update_documents_raises_multiple_documents_error_when_key_is_not_unique(sportblurbs_database, collection_name):
     documents = copy.deepcopy(sportblurbs_database[collection_name].find())
     non_unique_key = list(documents[0])[0]
-    sportblurbs_database[collection_name].count.return_value = 2
+    sportblurbs_database[collection_name].count_documents.return_value = 2
     with pytest.raises(MultipleDocumentsError, match=non_unique_key):
         update_documents(sportblurbs_database, collection_name, documents, non_unique_key)
 
@@ -102,7 +105,7 @@ def test_update_documents_raises_multiple_documents_error_when_key_is_not_unique
 def test_update_documents_updates_documents(sportblurbs_database, collection_name):
     documents = copy.deepcopy(sportblurbs_database[collection_name].find())
     unique_key = list(documents[0])[0]
-    sportblurbs_database[collection_name].count.return_value = 1
+    sportblurbs_database[collection_name].count_documents.return_value = 1
     update_documents(sportblurbs_database, collection_name, documents, unique_key)
     update_calls = list()
     for call_args in sportblurbs_database[collection_name].update_one.call_args_list:

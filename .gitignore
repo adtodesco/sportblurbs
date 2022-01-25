@@ -1,0 +1,9 @@
+# Virtual env
+venv
+
+# Build 
+sportblurbs.egg-info
+MANIFEST
+
+# Testing
+.pytest_cache
