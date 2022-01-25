@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 from datetime import timedelta
 from dateutil import parser
@@ -12,16 +14,12 @@ from sportblurbs.filter import (
     filter_player_has_team,
 )
 from sportblurbs.league import nfl, mlb, nba
-from sportblurbs.processor import process_games
+from sportblurbs.process import process_games
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger()
 
-LEAGUE_MAP = {
-    nfl.name: nfl,
-    mlb.name: mlb,
-    nba.name: nba,
-}
+LEAGUE_MAP = {league.name: league for league in [nfl, mlb, nba]}
 
 
 def parse_args():
